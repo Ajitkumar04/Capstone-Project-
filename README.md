@@ -1,4 +1,4 @@
-# India House Price Prediction Using Machine Learning 
+ # India House Price Prediction Using Machine Learning 
 
  # ***Project Overview*** : 
 This project predicts house prices in India using machine learning. It analyzes property 
@@ -315,7 +315,6 @@ I checked class imblance in a dataset no imbalance Price_in_Lakhs
 ### b. Decision-threshold sensitivity.
 
 The F1 score is 0.00 for all thersholds (0.30-0.7).therfore,no threshold improves the model's perfromance.the model fails to correctly identify the positive class so ther is no threshold that maximizex the F1 score.
-
 
 
 
