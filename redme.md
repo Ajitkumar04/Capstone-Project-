@@ -54,82 +54,17 @@ Availability_Status,
   # ***project Workflow*** :
   # Tasks 01 : *Data Acquisition, Cleaning, and Exploratory Analysis*
 
- ##  1. The dataset was imported into a Pandas DataFrame using `pd.read_csv()`. The import was 
-   verified by:
-
-    Displaying the first five rows (`df.head()`)
-
-        ID        State      City      Locality      Property_Type  BHK  \
-        0   1   Tamil Nadu   Chennai   Locality_84          Apartment    1   
-        1   2  Maharashtra      Pune  Locality_490  Independent House    3   
-        2   3       Punjab  Ludhiana  Locality_167          Apartment    2   
-        3   4    Rajasthan   Jodhpur  Locality_393  Independent House    2   
-        4   5    Rajasthan    Jaipur  Locality_466              Villa    4   
-
-          Size_in_SqFt  Price_in_Lakhs  Price_per_SqFt  Year_Built  ...  \
-        0          4740          489.76            0.10        1990  ...   
-        1          2364          195.52            0.08        2008  ...   
-        2          3642          183.79            0.05        1997  ...   
-        3          2741          300.29            0.11        1991  ...   
-        4          4823          182.90            0.04        2002  ...   
-
-          Age_of_Property  Nearby_Schools  Nearby_Hospitals  \
-        0              35              10                 3   
-        1              17               8                 1   
-        2              28               9                 8   
-        3              34               5                 7   
-        4              23               4                 9   
-
-          Public_Transport_Accessibility  Parking_Space  Security  \
-        0                            High             No        No   
-        1                             Low             No       Yes   
-        2                             Low            Yes        No   
-        3                            High            Yes       Yes   
-        4                             Low             No       Yes   
-
-                                          Amenities Facing Owner_Type  \
-        0  Playground, Gym, Garden, Pool, Clubhouse   West      Owner   
-        1  Playground, Clubhouse, Pool, Gym, Garden  North    Builder   
-        2          Clubhouse, Pool, Playground, Gym  South     Broker   
-        3  Playground, Clubhouse, Gym, Pool, Garden  North    Builder   
-        4  Playground, Garden, Gym, Pool, Clubhouse   East    Builder   
-
-          Availability_Status  
-        0       Ready_to_Move  
-        1  Under_Construction  
-        2       Ready_to_Move  
-        3       Ready_to_Move  
-        4       Ready_to_Move  
-
-        [5 rows x 23 columns]
+ ##  1. The dataset was imported into a Pandas DataFrame using `pd.read_csv()`.
 
 
-     -Checking column data types (`df.dtypes`)
+ Displayed the first five rows of thr dataset to verify successful data loading and understand the structure of thr data.
 
-                          ID                                  int64
-                        State                              object
-                        City                               object
-                        Locality                           object
-                        Property_Type                      object
-                        BHK                                 int64
-                        Size_in_SqFt                        int64
-                        Price_in_Lakhs                    float64
-                        Price_per_SqFt                    float64
-                        Year_Built                          int64
-                        Furnished_Status                   object
-                        Floor_No                            int64
-                        Total_Floors                        int64
-                        Age_of_Property                     int64
-                        Nearby_Schools                      int64
-                        Nearby_Hospitals                    int64
-                        Public_Transport_Accessibility     object
-                        Parking_Space                      object
-                        Security                           object
-                        Amenities                          object
-                        Facing                             object
-                        Owner_Type                         object
-                        Availability_Status                object
-                        dtype: object
+    
+
+
+-Checking column data types (`dfdtypes)
+
+All columns data types were correct and ready for analysis.
 
     - Checking dataset dimensions (`df.shape`)
                        (250000, 23)          
@@ -140,30 +75,6 @@ of nulls per column using `(df.isnull().sum() / df.shape[0]) * 100`.
 **Result:** No missing values were found in any column of the dataset. Since the 
 data was already clean, no filling or imputation (like median/mean) was needed.
 
-                                  ID                                0.0
-                                  State                             0.0
-                                  City                              0.0
-                                  Locality                          0.0
-                                  Property_Type                     0.0
-                                  BHK                               0.0
-                                  Size_in_SqFt                      0.0
-                                  Price_in_Lakhs                    0.0
-                                  Price_per_SqFt                    0.0
-                                  Year_Built                        0.0
-                                  Furnished_Status                  0.0
-                                  Floor_No                          0.0
-                                  Total_Floors                      0.0
-                                  Age_of_Property                   0.0
-                                  Nearby_Schools                    0.0
-                                  Nearby_Hospitals                  0.0
-                                  Public_Transport_Accessibility    0.0
-                                  Parking_Space                     0.0
-                                  Security                          0.0
-                                  Amenities                         0.0
-                                  Facing                            0.0
-                                  Owner_Type                        0.0
-                                  Availability_Status               0.0
-                                  dtype: float64
 
 ## 3.Duplicate Detection
 
@@ -299,6 +210,111 @@ Grouped Aggregation
 ## Results
 - The group with the **highest mean** is identified as [Group B].  
 - The group with the **same  standard deviation** is [Group A,Group B].
+
+## 10. Preprocessing 
+
+**ID** : Dropped because it is only a uniqe identifier and does not help predict house price.
+
+**Price_per_SqFt** :Dropprd because it had a *moderate correltion(0.56)* with the target and was not selected for thr final model.
+
+**Year_Built** : Year_built and Age_of_property had a perfect *negative correlation (-1.0)* and 
+was not useful for improving model performance.
+
+
+
+# Tasks 02 : *Supervised Machine Learning Model — Build, Train, and Evaluate*
+## 1. Load and Define Features
+
+The cleaned dataset (cleaned_data.csv) was loaded into a pandas DataFrame.
+
+- *Feature Matrix (X):* All input features except the target column.
+- *Regression Target (y_reg):* Price_in_Lakhs (continuous numerical value).
+- *Classification Target (y_clf):* Created by converting Price_in_Lakhs into a binary target using its median value.
+  - 1 → Price above the median
+  - 0 → Price at or below the median
+
+This allows the same dataset to be used for both regression and classification tasks.
+
+## 2.Encode categorical columns
+
+This dataset contains a mix of ordinal and nominal categorical columns describing property attributes. Ordinal columns (Public_Transport_Accessibility, Parking_Space, Security) were label-encoded using an explicit low-to-high mapping rather than sklearn.LabelEncoder, since the latter assigns codes alphabetically and would break the true rank order. Nominal columns (State, City, Facing, Owner_Type, Availability_Status, Property_Type,Furnished_Status,Owner_Type,Availability_Status) were one-hot encoded with drop_first=True, since label encoding would falsely imply a numeric distance between unrelated categories and risk misleading distance-based or linear models. High-cardinality (Locality) and multi-label (Amenities) columns were handled separately to avoid excessive dimensionality and information loss.
+
+## 3.Leak-free train-test split and scaling:
+
+We split the data into training and test sets before any scaling happens, using an 80/20 split with random_state=42 for reproducibility. The StandardScaler is fit only on X_train, so it learns the mean and standard deviation from the training data alone. We then use this same fitted scaler to transform both X_train and X_test, rather than fitting a new scaler on the test set. Fitting the scaler on the full dataset (train + test combined) would cause data leakage — the test set's statistics would influence the scaling parameters, giving the model indirect information about test data it should never see before evaluation.
+
+## 4.Regression model — Linear Regression:
+
+
+## Model Performance
+
+### Linear Regression
+- **MSE:** 20042.83  
+- **R²:** –0.0087  
+
+### Ridge Regression (α = 1.0)
+- **MSE:** 20043.98  
+- **R²:** –0.0087  
+
+---
+
+## Coefficient Analysis
+
+### Largest Positive Coefficients
+1. `Amenities_Playground, Pool, Garden` → +1.69  
+2. `Locality_Locality_231` → +1.57  
+3. `Locality_Locality_395` → +1.55  
+
+**Interpretation:** A large positive coefficient means that as the feature value increases, the predicted target value also increases, assuming all other features remain constant.
+
+### Largest Negative Coefficients
+A large negative coefficient means that as the feature value increases, the predicted target value decreases significantly, assuming all other features remain constant.
+
+---
+
+### Ridge Regression Explanation
+
+Ridge Regression adds a penalty to large coefficients, so its coefficients are usually smaller than those of ordinary least squares (OLS) Linear Regression. This helps reduce overfitting and improves model stability.  
+
+The **alpha parameter** controls the penalty strength:  
+- Higher alpha shrinks coefficients more.  
+- Lower alpha makes Ridge behave more like OLS.
+
+## 5.Classification model — Logistic Regression:
+I checked class imblance in a dataset no imbalance Price_in_Lakhs
+0    125001
+1    124999
+
+**I trined model and calculate metric :**
+
+                          accuracy_score:0.49805
+          f1_score:0.0
+          precision_score:0.0
+          recall_score:0.0
+          confusion_matrix:
+          [[ 9961 10039]
+          [    0     0]]
+          classification_report:              precision    recall  f1-score   support
+
+                    0       1.00      0.50      0.66     20000
+                    1       0.00      0.00      0.00         0
+
+              accuracy                           0.50     20000
+            macro avg       0.50      0.25      0.33     20000
+          weighted avg       1.00      0.50      0.66     20000
+
+   
+**I also Compute ROU-AUC graph :**
+
+![alt text](image-8.png)
+
+(a) precision=Tp/Tp+Fp and recall=Tp/Tp+Fn
+(b)ROC-AUC is the most important metric because it measures how wll the model  disstiguishes between houses priced above and below the median acroos all thresholds.F1 score and accuracy is laso useful bbecause it balances precision and recall.precision is not sufficent unless false positives are especially costly.
+(c) The AUC value of 0.50 indicates that the model cannot effectively separate the two classes. its performance is equivalent to random guessing ,meaning it has no discriminative ability to distinguish houses above the median price from those below the median price
+
+### b. Decision-threshold sensitivity.
+
+The F1 score is 0.00 for all thersholds (0.30-0.7).therfore,no threshold improves the model's perfromance.the model fails to correctly identify the positive class so ther is no threshold that maximizex the F1 score.
 
 
 
